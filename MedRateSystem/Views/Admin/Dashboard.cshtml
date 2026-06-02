@@ -1,0 +1,290 @@
+﻿@model IEnumerable<MedRateSystem.Controllers.ThuocThongKeViewModel>
+@{
+    ViewData["Title"] = "Dashboard Quản Trị Bác Sĩ";
+    // Ép dữ liệu sang JSON ngay từ đầu file
+    var jsonModelData = Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+    
+    // Tính toán các chỉ số thống kê nhanh (KPIs)
+    var tongSoThuoc = Model.Count();
+    var tongSoCa = Model.Sum(t => t.TongSoLuotDanhGia);
+    var soThuocNguyHiem = Model.Count(t => t.TyLeADR > 5.0);
+    var thuocNguyHiem = Model.FirstOrDefault(t => t.TyLeADR > 5.0);
+}
+
+<div class="container-fluid mt-4 px-4">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-9">
+            <h2 class="text-dark fw-bold mb-1">📊 HỆ THỐNG GIÁM SÁT & ĐÁNH GIÁ AN TOÀN THUỐC</h2>
+            <p class="text-muted mb-0">Trung tâm phân tích thời gian thực từ phản hồi lâm sàng của người bệnh</p>
+        </div>
+        <div class="col-md-3 text-md-end mt-3 mt-md-0">
+            <span class="badge bg-success-subtle text-success border border-success p-2 fs-6 fw-bold rounded-3">
+                👨‍⚕️ Vai trò: Bác sĩ / Dược sĩ
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-3 bg-white p-3 border-start border-primary border-4">
+                <div class="text-muted small fw-bold text-uppercase">Thuốc Theo Dõi</div>
+                <div class="fs-2 fw-bold text-primary my-1">@tongSoThuoc</div>
+                <div class="text-muted small">Danh mục nội viện</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-3 bg-white p-3 border-start border-success border-4">
+                <div class="text-muted small fw-bold text-uppercase">Tổng Ca Khảo Sát</div>
+                <div class="fs-2 fw-bold text-success my-1">@tongSoCa</div>
+                <div class="text-muted small">Phản hồi tích lũy</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-3 bg-white p-3 border-start border-danger border-4">
+                <div class="text-muted small fw-bold text-uppercase">Vi Phạm Ngưỡng</div>
+                <div class="fs-2 fw-bold text-danger my-1">@soThuocNguyHiem</div>
+                <div class="text-muted small">Tỷ lệ ADR > 5% (QD_03)</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-3 bg-white p-3 border-start border-warning border-4">
+                <div class="text-muted small fw-bold text-uppercase">Chỉ Số An Toàn</div>
+                <div class="fs-2 fw-bold text-warning my-1">@((tongSoThuoc > 0) ? Math.Round((double)(tongSoThuoc - soThuocNguyHiem) / tongSoThuoc * 100, 1) : 100)%</div>
+                <div class="text-muted small">Thuốc đạt vùng xanh</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold text-secondary mb-3">⭐ Tương Quan Điểm Hài Lòng Trung Bình (Likert)</h5>
+                    <div style="position: relative; height: 320px;">
+                        <canvas id="chartLikert"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold text-danger mb-3">☣️ Phân Bổ Tác Dụng Phụ (ADR)</h5>
+                    <div style="position: relative; height: 320px;">
+                        <canvas id="chartADR"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-5">
+        <div class="card-header bg-dark py-3 px-4 d-flex justify-content-between align-items-center">
+            <h5 class="card-title text-white mb-0 fw-bold">📋 DANH SÁCH THEO DÕI CHẤT LƯỢNG LÂM SÀNG</h5>
+            <span class="badge bg-secondary-subtle text-dark small fw-normal">Thời gian thực</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead class="table-light text-uppercase small text-muted">
+                    <tr>
+                        <th style="width: 10%;">Mã Thuốc</th>
+                        <th class="text-start" style="width: 25%;">Tên Đầu Thuốc</th>
+                        <th style="width: 15%;">Nhà Sản Xuất</th>
+                        <th>Lượt Khảo Sát</th>
+                        <th>Điểm Likert TB</th>
+                        <th>Tỷ Lệ ADR</th>
+                        <th style="width: 20%;">Trạng Thái Y Tế</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var thuoc in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold text-secondary">@thuoc.MaThuoc</td>
+                            <td class="text-start fw-bold text-primary">💊 @thuoc.TenThuoc</td>
+                            <td class="text-muted">@thuoc.NhaSanXuat</td>
+                            <td><span class="badge bg-light text-dark border px-3 py-2">@thuoc.TongSoLuotDanhGia ca</span></td>
+                            <td>
+                                <span class="badge bg-warning text-dark px-2 py-2 fw-bold fs-7">
+                                    @thuoc.DiemLikertTB / 5.0 ⭐
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge @(thuoc.TyLeADR > 5.0 ? "bg-danger" : "bg-info-subtle text-info") px-2 py-2 fw-bold fs-7">
+                                    @thuoc.TyLeADR%
+                                </span>
+                            </td>
+                            <td>
+                                @if (thuoc.TyLeADR > 5.0)
+                                {
+                                    <span class="badge bg-danger p-2 animate-flash">⚠️ Nguy cơ cao (>5%)</span>
+                                }
+                                else if (thuoc.TongSoLuotDanhGia == 0)
+                                {
+                                    <span class="badge bg-light text-muted p-2">Chưa có dữ liệu</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success-subtle text-success p-2">✓ An toàn ổn định</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-5">
+        <div class="card-header bg-danger py-3 px-4 d-flex justify-content-between align-items-center">
+            <h5 class="card-title text-white mb-0 fw-bold">🚨 NHẬT KÝ CHI TIẾT BIẾN CỐ BẤT LỢI GHI NHẬN</h5>
+            <span class="badge bg-white-50 text-white border border-white-50 small">ADR LOGS</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-uppercase small text-muted text-center">
+                    <tr>
+                        <th style="width: 12%;">Mã Phiếu</th>
+                        <th class="text-start" style="width: 25%;">Thuốc Bị Phản Ứng</th>
+                        <th style="width: 15%;">Mức Hài Lòng</th>
+                        <th class="text-start">Chi Tiết Triệu Chứng Lâm Sàng Từ Người Bệnh</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var bienCos = ViewBag.DanhSachBienCo as List<MedRateSystem.Controllers.BienCoLamSangViewModel>;
+                    }
+                    @if (bienCos != null && bienCos.Any())
+                    {
+                        foreach (var bc in bienCos)
+                        {
+                            <tr>
+                                <td class="text-center"><span class="badge bg-secondary px-2 py-2">#@bc.MaPhieu</span></td>
+                                <td class="text-danger fw-bold">💊 @bc.TenThuoc</td>
+                                <td class="text-center fw-bold text-warning">@bc.DiemLikert ⭐</td>
+                                <td>
+                                    <div class="alert alert-danger-subtle text-danger py-2 px-3 mb-0 border-0 rounded-3">
+                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>Triệu chứng:</strong> @(string.IsNullOrEmpty(bc.MoTaTrieuChung) ? "Gặp tác dụng phụ nhưng người bệnh không mô tả thêm chuyên sâu." : bc.MoTaTrieuChung)
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                🎉 Hệ thống chưa ghi nhận biến cố bất lợi nào. Tất cả các thuốc đang ở trạng thái an toàn tuyệt đối.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if (thuocNguyHiem != null)
+{
+    <div class="modal fade" id="modalCanhBaoADR" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
+                <div class="modal-header bg-danger text-white p-3 text-center d-block position-relative border-0">
+                    <h4 class="modal-title fw-bold mb-0">🚨 CẢNH BÁO KHẨN CẤP: VI PHẠM QD_03</h4>
+                </div>
+                <div class="modal-body p-4 text-center bg-light">
+                    <p class="fs-6 text-secondary">Hệ thống phát hiện loại thuốc sau đây đã vượt quá ngưỡng an toàn dược lý quy định (<strong class="text-danger">5.0%</strong>):</p>
+                    <div class="card border-0 bg-white p-4 shadow-sm my-3 rounded-3">
+                        <h3 class="fw-bold text-danger mb-2">@thuocNguyHiem.TenThuoc</h3>
+                        <div class="text-muted small mb-2">Nhà sản xuất: @thuocNguyHiem.NhaSanXuat</div>
+                        <div class="display-5 fw-bold text-danger">@thuocNguyHiem.TyLeADR%</div>
+                        <span class="text-muted small mt-1 d-block">Tỷ lệ biến chứng thực tế vượt ngưỡng an toàn</span>
+                    </div>
+                    <p class="text-muted small mb-0">⚠️ <strong>Khuyến cáo:</strong> Dược sĩ lâm sàng tạm ngưng chỉ định thuốc trong đơn mới để tiến hành rà soát chất lượng lô thuốc.</p>
+                </div>
+                <div class="modal-footer bg-light p-3 border-top-0 d-flex justify-content-between">
+                    <button type="button" class="btn btn-warning fw-bold px-3 py-2 rounded-3 text-dark" data-bs-dismiss="modal">❌ XÁC NHẬN ĐÃ TIẾP NHẬN</button>
+                    <button type="button" class="btn btn-dark text-white px-3 py-2 rounded-3" onclick="alert('Báo cáo đã được chuyển tiếp mã hóa lên Hội đồng Thuốc bệnh viện thành công!')">GỬI HỘI ĐỒNG THUỐC</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var myModal = new bootstrap.Modal(document.getElementById('modalCanhBaoADR'));
+            myModal.show();
+        });
+    </script>
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Bọc toàn bộ biểu thức Razor vào trong cặp dấu nháy đơn
+    const rawData = '@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model))';
+    const labelsThuoc = rawData.map(item => item.TenThuoc || item.tenThuoc);
+    const dataLikert = rawData.map(item => item.DiemLikertTB || item.diemLikertTB);
+    const dataADR = rawData.map(item => item.TyLeADR || item.tyLeADR);
+
+    // 1. Biểu đồ cột Likert Score
+    const ctxLikert = document.getElementById('chartLikert').getContext('2d');
+    new Chart(ctxLikert, {
+        type: 'bar',
+        data: {
+            labels: labelsThuoc,
+            datasets: [{
+                label: 'Điểm Hài Lòng (1-5★)',
+                data: dataLikert,
+                backgroundColor: 'rgba(255, 193, 7, 0.65)',
+                borderColor: 'rgba(255, 193, 7, 1)',
+                borderWidth: 1.5,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, max: 5 }
+            }
+        }
+    });
+
+    // 2. Biểu đồ quạt tròn phân chia tỷ lệ ADR
+    const ctxADR = document.getElementById('chartADR').getContext('2d');
+    new Chart(ctxADR, {
+        type: 'doughnut',
+        data: {
+            labels: labelsThuoc,
+            datasets: [{
+                label: 'Tỷ lệ ADR (%)',
+                data: dataADR,
+                backgroundColor: [
+                    'rgba(220, 53, 69, 0.7)',
+                    'rgba(253, 126, 20, 0.7)',
+                    'rgba(13, 110, 253, 0.7)',
+                    'rgba(111, 66, 193, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12 } }
+            }
+        }
+    });
+</script>
+
+<style>
+
+    .animate-flash {
+    animation: flash 1s infinite;
+    }
+
+    @Html.Raw("@keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }")
+</style>
+
+}

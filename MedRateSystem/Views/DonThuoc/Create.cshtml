@@ -1,0 +1,73 @@
+﻿@model MedRateSystem.Models.KeDonViewModel
+
+<div class="container mt-4">
+    <h3>Kê đơn thuốc mới</h3>
+    <form asp-action="LuuDonThuoc" method="post">
+        <div class="mb-3">
+            <label>Chọn Bệnh nhân:</label>
+            <select asp-for="MaBenhNhan" class="form-control">
+                @foreach (var bn in ViewBag.BenhNhans)
+                {
+                    <option value="@bn.MaBenhNhan">@bn.HoTen (@bn.MaBenhNhan)</option>
+                }
+            </select>
+        </div>
+
+        <table class="table" id="tableThuoc">
+            <thead>
+                <tr>
+                    <th>Thuốc</th>
+                    <th>Số lượng</th>
+                    <th>Cách dùng</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="bodyThuoc">
+                <tr>
+                    <td>
+                        <select name="DanhSachThuoc[0].MaThuoc" class="form-control">
+                            @foreach (var t in ViewBag.DanhSachThuoc)
+                            {
+                                <option value="@t.MaThuoc">@t.TenThuoc</option>
+                            }
+                        </select>
+                    </td>
+                    <td><input type="number" name="DanhSachThuoc[0].SoLuong" class="form-control" required /></td>
+                    <td><input type="text" name="DanhSachThuoc[0].CachDung" class="form-control" required /></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" class="btn btn-secondary" onclick="themDong()">+ Thêm thuốc</button>
+        <button type="submit" class="btn btn-primary">Lưu Đơn Thuốc</button>
+    </form>
+</div>
+
+<script>
+    let i = 1;
+    function themDong() {
+        let tbody = document.querySelector("#bodyThuoc");
+        
+        // Tạo một phần tử tạm để lấy danh sách options từ dòng đầu tiên
+        let firstRow = tbody.querySelector("tr");
+        let options = firstRow.querySelector("select").innerHTML;
+
+        let html = `<tr>
+            <td>
+                <select name="DanhSachThuoc[${i}].MaThuoc" class="form-control">
+                    ${options}
+                </select>
+            </td>
+            <td><input type="number" name="DanhSachThuoc[${i}].SoLuong" class="form-control" required /></td>
+            <td><input type="text" name="DanhSachThuoc[${i}].CachDung" class="form-control" required /></td>
+            <td><button type="button" class="btn btn-danger" onclick="xoaDong(this)">Xóa</button></td>
+        </tr>`;
+        
+        tbody.insertAdjacentHTML('beforeend', html);
+        i++;
+    }
+
+    function xoaDong(btn) {
+        btn.closest('tr').remove();
+    }
+</script>

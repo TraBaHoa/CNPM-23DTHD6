@@ -1,0 +1,76 @@
+﻿@model IEnumerable<MedRateSystem.Models.Thuoc>
+@{
+    var bn = ViewBag.BenhNhan as MedRateSystem.Models.BenhNhan;
+    var don = ViewBag.DonThuoc as MedRateSystem.Models.DonThuoc;
+    ViewData["Title"] = "Phiếu khảo sát thuốc";
+}
+
+<div class="container mt-4" style="max-width: 850px;">
+    <div class="card border-0 shadow-sm bg-dark text-white mb-4">
+        <div class="card-body p-4">
+            <h3 class="fw-bold">PHIẾU KHẢO SÁT AN TOÀN DƯỢC LÂM SÀNG</h3>
+            <p class="mb-0 text-white-50">Bệnh nhân: <strong>@bn?.HoTen</strong> | Mã BN: <strong>@bn?.MaBenhNhan</strong></p>
+        </div>
+    </div>
+
+    <form asp-action="GuiDanhGia" method="post">
+        <input type="hidden" name="maBenhNhan" value="@bn?.MaBenhNhan" />
+
+        @if (Model != null && Model.Any())
+        {
+            int index = 0;
+            @foreach (var thuoc in Model)
+            {
+                <div class="card mb-4 border-0 shadow-sm rounded-3">
+                    <div class="card-header bg-light fw-bold py-3">💊 Thuốc: @thuoc.TenThuoc</div>
+                    <div class="card-body">
+                        <input type="hidden" name="DanhSachDanhGia[@index].MaThuoc" value="@thuoc.MaThuoc" />
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">1. Mức độ hài lòng về hiệu quả:</label>
+                            <div class="btn-group w-100" role="group">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <input type="radio" class="btn-check" name="DanhSachDanhGia[@index].DiemLikert" id="star_@index@i" value="@i" required>
+                                    <label class="btn btn-outline-warning" for="star_@index@i">@i Sao</label>
+                                }
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label fw-bold">2. Tác dụng phụ gặp phải (nếu có):</label>
+                            <div class="row g-2">
+                                @{
+                                    var adrList = new Dictionary<string, string> {
+                                        { "ChongMat", "Chóng mặt" }, { "BuonNon", "Buồn nôn" },
+                                        { "DiUng", "Dị ứng" }, { "BuonNgu", "Buồn ngủ" },
+                                        { "KhoMieng", "Khô miệng" }, { "TaoBon", "Táo bón" }, { "Khac", "Khác" }
+                                    };
+                                }
+                                @foreach (var adr in adrList)
+                                {
+                                    <div class="col-6 col-md-4">
+                                        <input type="checkbox" class="btn-check" name="DanhSachDanhGia[@index].TacDungPhu" value="@adr.Key" id="adr_@index@adr.Key">
+                                        <label class="btn btn-outline-danger w-100" for="adr_@index@adr.Key">@adr.Value</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                index++;
+            }
+        }
+        else
+        {
+            <div class="alert alert-warning">Hiện không có đơn thuốc nào để khảo sát.</div>
+        }
+    
+        <div class="card p-3 mb-4 border-0 shadow-sm">
+            <label class="fw-bold mb-2">3. Ý kiến đóng góp khác:</label>
+            <textarea name="GhiChuNhanXet" class="form-control" rows="3" placeholder="Nhập ghi chú của bạn..."></textarea>
+        </div>
+    
+        <button type="submit" class="btn btn-success btn-lg w-100 mb-5 py-3 fw-bold">🚀 GỬI BÁO CÁO KHẢO SÁT</button>
+    </form>
+</div>

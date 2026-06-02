@@ -1,0 +1,27 @@
+﻿@model IEnumerable<MedRateSystem.Models.AbcVenViewModel>
+<div class="container mt-4">
+    <h3 class="text-primary">Báo cáo Phân tích ABC/VEN</h3>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Tên Thuốc</th>
+                <th>Số lượng</th>
+                <th>Thành tiền</th>
+                <th>Nhóm ABC</th>
+                <th>Nhóm VEN</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.TenThuoc</td>
+                    <td>@item.TongSoLuongKe</td>
+                    <td>@item.ThanhTien.ToString("N0")</td>
+                    <td><span class="badge bg-@(item.NhomABC == "A" ? "danger" : "info")">@item.NhomABC</span></td>
+                    <td><span class="badge bg-secondary">@item.NhomVEN</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
