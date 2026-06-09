@@ -47,9 +47,9 @@ namespace MedRateSystem.Controllers
             // 4. Vòng lặp tính toán thống kê tổng quan từng đầu thuốc
             foreach (var thuoc in danhSachThuoc)
             {
-                var danhGiaThuoc = await _context.Set<ChiTietKhaoSat>()
-                                                 .Where(c => c.MaThuoc == thuoc.MaThuoc)
-                                                 .ToListAsync();
+                var danhGiaThuoc = await _context.ChiTietKhaoSats // Đảm bảo gọi đúng DbContext
+                                 .Where(c => c.MaThuoc == thuoc.MaThuoc)
+                                 .ToListAsync();
 
                 double diemTrungBinh = 5.0;
                 double tyLeADR = 0.0;

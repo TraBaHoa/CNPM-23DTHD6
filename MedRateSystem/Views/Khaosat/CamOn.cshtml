@@ -1,27 +1,31 @@
 ﻿@{
-    ViewData["Title"] = "Cảm Ơn Khách Hàng";
+    ViewData["Title"] = "Gửi Đánh Giá Thành Công";
 }
 
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-7 text-center">
-            <div class="card shadow border-0 p-5 bg-white">
+        <div class="col-md-7">
+            <div class="card shadow-lg border-0 rounded-4 p-5 bg-white text-center">
                 <div class="mb-4">
-                    <span style="font-size: 70px;">🎉</span>
+                    <div class="display-1">🎉</div>
                 </div>
+                
                 <h2 class="text-success fw-bold mb-3">GỬI ĐÁNH GIÁ THÀNH CÔNG!</h2>
-                <h4 class="text-dark mb-4">Hệ thống MedRateSystem xin chân thành cảm ơn Ông/Bà!</h4>
+                <h4 class="text-dark mb-4">MedRateSystem xin chân thành cảm ơn Ông/Bà.</h4>
                 
                 <p class="text-muted fs-5 lh-base px-3">
-                    Những ý kiến đóng góp quý báu của Ông/Bà về mức độ hài lòng và các phản ứng phụ khi sử dụng thuốc
-                    sẽ là cơ sở dữ liệu quan trọng giúp đội ngũ Bác sĩ và Dược sĩ lâm sàng nâng cao chất lượng điều trị,
-                    đảm bảo an toàn tối đa cho cộng đồng bệnh nhân.
+                    Ý kiến đóng góp của Ông/Bà là cơ sở dữ liệu quan trọng giúp đội ngũ Bác sĩ và Dược sĩ lâm sàng
+                    nâng cao chất lượng điều trị và đảm bảo an toàn cho mọi người bệnh.
                 </p>
+
+                <div class="alert alert-info mt-4 border-0 bg-light-info text-muted small">
+                    Hệ thống sẽ tự động quay về trang đăng nhập sau <span id="countdown">10</span> giây...
+                </div>
 
                 <hr class="my-4" />
 
                 <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                    <a asp-controller="Khaosat" asp-action="Login" class="btn btn-primary btn-lg px-4 gap-3 fw-bold">
+                    <a asp-controller="Khaosat" asp-action="Login" class="btn btn-primary btn-lg px-4 fw-bold rounded-3 shadow-sm">
                         ↩ Quay lại trang chủ
                     </a>
                 </div>
@@ -29,3 +33,20 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Logic đếm ngược và tự động chuyển hướng
+        let seconds = 10;
+        const countdownElement = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            seconds--;
+            countdownElement.innerText = seconds;
+            if (seconds <= 0) {
+                clearInterval(timer);
+                window.location.href = '@Url.Action("Login", "Khaosat")';
+            }
+        }, 1000);
+    </script>
+}

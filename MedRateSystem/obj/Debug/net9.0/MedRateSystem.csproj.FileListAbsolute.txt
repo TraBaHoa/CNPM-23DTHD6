@@ -152,7 +152,6 @@ D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\rjsmcshtml.dswa.cache.json
 D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\scopedcss\bundle\MedRateSystem.styles.css
 D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\scopedcss\projectbundle\MedRateSystem.bundle.scp.css
-D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\compressed\dgnk4dvnfm-{0}-b9sayid5wm-b9sayid5wm.gz
 D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\compressed\21fn3pur3b-{0}-61n19gt1b8-61n19gt1b8.gz
 D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\compressed\lza21vrobt-{0}-xtxxf3hu2r-xtxxf3hu2r.gz
 D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\compressed\5iel3w79s6-{0}-bqjiyaj88i-bqjiyaj88i.gz
@@ -228,3 +227,5 @@ D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\refint\MedRateSystem.dll
 D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\MedRateSystem.pdb
 D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\MedRateSystem.genruntimeconfig.cache
 D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\ref\MedRateSystem.dll
+D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\MedRateSystem.sourcelink.json
+D:\MedRateSystem\MedRateSystem\obj\Debug\net9.0\compressed\dgnk4dvnfm-{0}-08wxm8g3kg-08wxm8g3kg.gz

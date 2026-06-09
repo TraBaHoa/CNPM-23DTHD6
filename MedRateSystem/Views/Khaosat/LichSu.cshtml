@@ -1,0 +1,30 @@
+﻿@model IEnumerable<MedRateSystem.Models.ChiTietKhaoSat>
+
+<div class="container mt-4">
+    <h3 class="fw-bold mb-4">📜 LỊCH SỬ ĐÁNH GIÁ THUỐC</h3>
+    <div class="card shadow-sm border-0">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Mã Phiếu</th>
+                    <th>Tên Thuốc</th>
+                    <th>Tổng thể</th>
+                    <th>Tác dụng phụ</th>
+                    <th>Nhận xét</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.MaPhieu</td>
+                        <td class="fw-bold">@item.MaThuocNavigation?.TenThuoc</td>
+                        <td>@item.DiemTongThe ★</td>
+                        <td>@(string.IsNullOrEmpty(item.MoTaTrieuChung) ? "Không" : item.MoTaTrieuChung)</td>
+                        <td>@item.NhanXet</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

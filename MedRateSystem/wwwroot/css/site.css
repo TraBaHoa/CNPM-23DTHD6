@@ -1,31 +1,97 @@
+/* --- Cấu hình cơ bản --- */
 html {
-  font-size: 14px;
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    html {
+        font-size: 16px;
+    }
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background-color: #f8f9fa;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+/* --- Hiệu ứng Đánh giá sao (Star Rating) --- */
+.rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    margin-bottom: 10px;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+    .rating > input {
+        display: none;
+    }
+
+    .rating > label {
+        position: relative;
+        width: 1.1em;
+        font-size: 2rem;
+        color: #ccc;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+        .rating > label:hover, .rating > label:hover ~ label, .rating > input:checked ~ label {
+            color: #FFD700;
+        }
+
+/* --- Giao diện Thẻ đánh giá (Rating Card - Lịch sử) --- */
+.rating-card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.star-gold {
+    color: #FFD700;
+    font-size: 1.2rem;
+}
+
+/* --- Dashboard Thống kê --- */
+.stat-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #dee2e6;
+    text-align: center;
+}
+
+.progress {
+    height: 12px;
+    border-radius: 6px;
+    background-color: #e9ecef;
+    margin: 8px 0;
+}
+
+.progress-bar {
+    background-color: #FFD700;
+    border-radius: 6px;
+}
+
+/* --- Định dạng Form --- */
+.form-control:focus {
+    border-color: #258cfb;
+    box-shadow: 0 0 0 0.25rem rgba(37,140,251,0.25);
+}
+
+.btn-success {
+    background-color: #28a745;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+}
+
+/* --- Helper classes --- */
+.text-gold {
+    color: #FFD700;
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MedRateSystem.Models;
+using System.Linq;
 
 namespace MedRateSystem.Controllers
 {
@@ -10,6 +11,7 @@ namespace MedRateSystem.Controllers
 
         public KhaosatController(MedRateContext context) => _context = context;
 
+        // --- 1. PHẦN ĐĂNG NHẬP & INDEX ---
         public IActionResult Login() => View();
 
         [HttpPost]
@@ -24,79 +26,88 @@ namespace MedRateSystem.Controllers
         {
             var benhNhan = await _context.BenhNhans.FirstOrDefaultAsync(b => b.MaBenhNhan == id);
             if (benhNhan == null) return RedirectToAction("Login");
-
             ViewBag.BenhNhan = benhNhan;
-            var donThuoc = await _context.DonThuocs
-                                         .Where(d => d.MaBenhNhan == id)
-                                         .OrderByDescending(d => d.NgayKeDon)
-                                         .FirstOrDefaultAsync();
-            ViewBag.DonThuoc = donThuoc;
+
+            var donThuoc = await _context.DonThuocs.Where(d => d.MaBenhNhan == id)
+                                         .OrderByDescending(d => d.NgayKeDon).FirstOrDefaultAsync();
 
             List<Thuoc> danhSachThuoc = new List<Thuoc>();
             if (donThuoc != null)
             {
-                var maThuocList = await _context.ChiTietDonThuocs
-                                                .Where(ct => ct.MaDonThuoc == donThuoc.MaDonThuoc)
+                var maThuocList = await _context.ChiTietDonThuocs.Where(ct => ct.MaDonThuoc == donThuoc.MaDonThuoc)
                                                 .Select(ct => ct.MaThuoc).ToListAsync();
-                danhSachThuoc = await _context.Thuocs
-                                              .Where(t => maThuocList.Contains(t.MaThuoc))
-                                              .ToListAsync();
+                danhSachThuoc = await _context.Thuocs.Where(t => maThuocList.Contains(t.MaThuoc)).ToListAsync();
             }
             return View(danhSachThuoc);
         }
 
+        // --- 2. XỬ LÝ GỬI ĐÁNH GIÁ (POST) ---
         [HttpPost]
-        public async Task<IActionResult> GuiDanhGia(string maBenhNhan, List<DanhGiaViewModel> DanhSachDanhGia, string GhiChuNhanXet)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GuiDanhGia(string maBenhNhan, List<DanhGiaViewModel> DanhSachDanhGia)
         {
-            // 1. Tạo phiếu
-            var phieu = new PhieuKhaoSat { MaBenhNhan = maBenhNhan, ThoiGianLamPhieu = DateTime.Now };
-            _context.PhieuKhaoSats.Add(phieu);
-            await _context.SaveChangesAsync();
+            if (DanhSachDanhGia == null || !DanhSachDanhGia.Any()) return RedirectToAction("Index", new { id = maBenhNhan });
 
-            // 2. Lưu chi tiết và xử lý cảnh báo ADR
-            // Sửa đoạn trong vòng lặp foreach ở GuiDanhGia
-            foreach (var item in DanhSachDanhGia)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                // Kiểm tra null an toàn trước khi join
-                var danhSachTrieuChung = item.TacDungPhu != null ? string.Join(", ", item.TacDungPhu) : "Không";
-                bool coADR = item.TacDungPhu != null && item.TacDungPhu.Count > 0;
+                var phieu = new PhieuKhaoSat { MaBenhNhan = maBenhNhan, ThoiGianLamPhieu = DateTime.Now };
+                _context.PhieuKhaoSats.Add(phieu);
+                await _context.SaveChangesAsync();
 
-                var chiTiet = new ChiTietKhaoSat
+                foreach (var item in DanhSachDanhGia.Where(x => x.MaThuoc != null))
                 {
-                    MaPhieu = phieu.MaPhieu,
-                    MaThuoc = item.MaThuoc,
-                    DiemLikert = item.DiemLikert,
-                    CoTacDungPhu = coADR,
-                    MoTaTrieuChung = danhSachTrieuChung
-                };
-                _context.Set<ChiTietKhaoSat>().Add(chiTiet);
-
-                if (coADR)
-                {
-                    var canhBao = new PhieuCanhBaoAdr
+                    var trieuChung = item.TacDungPhu != null ? string.Join(", ", item.TacDungPhu) : null;
+                    _context.ChiTietKhaoSats.Add(new ChiTietKhaoSat
                     {
+                        MaPhieu = phieu.MaPhieu,
                         MaThuoc = item.MaThuoc,
-                        // Sử dụng NoiDungCanhBao thay vì MoTa
-                        NoiDungCanhBao = "Bệnh nhân báo cáo: " + danhSachTrieuChung,
-                        // Sử dụng NgayPhatHien thay vì NgayCanhBao
-                        NgayPhatHien = DateTime.Now
-                    };
-                    _context.Set<PhieuCanhBaoAdr>().Add(canhBao);
+                        DiemLikert = item.DiemLikert,
+                        CoTacDungPhu = !string.IsNullOrEmpty(trieuChung),
+                        MoTaTrieuChung = trieuChung
+                    });
                 }
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return RedirectToAction("LichSu");
             }
-
-            await _context.SaveChangesAsync();
-
-            // 3. Logic Gợi ý bổ sung (nếu điểm Likert thấp)
-            if (DanhSachDanhGia.Any(x => x.DiemLikert <= 2))
-            {
-                TempData["Message"] = "Hệ thống đã ghi nhận đánh giá của bạn. Ý kiến của bạn sẽ được chuyển đến bác sĩ để cân nhắc thay đổi phác đồ.";
-            }
-
-            return RedirectToAction("CamOn");
+            catch { await transaction.RollbackAsync(); return RedirectToAction("Index", new { id = maBenhNhan }); }
         }
 
-        [HttpGet]
-        public IActionResult CamOn() => View();
+        // --- 3. PHẦN HIỂN THỊ LỊCH SỬ & THỐNG KÊ ---
+        public async Task<IActionResult> LichSu(string maBenhNhan)
+        {
+            // 1. Kiểm tra nếu không có mã bệnh nhân thì lấy từ Session (nếu bạn có dùng Session)
+            if (string.IsNullOrEmpty(maBenhNhan))
+            {
+                // Hoặc báo lỗi hoặc chuyển hướng về trang đăng nhập
+                return RedirectToAction("Login", "Account");
+            }
+
+            // 2. Truy vấn dữ liệu
+            var lichSuKhaoSat = await _context.ChiTietKhaoSats
+                .Include(c => c.MaThuocNavigation) // Bắt buộc phải có Include để lấy tên thuốc
+                .Where(c => c.MaPhieuNavigation.MaBenhNhan == maBenhNhan) // Kiểm tra lại cột MaBenhNhan ở đây
+                .OrderByDescending(c => c.MaPhieu)
+                .ToListAsync();
+
+            // 3. Gán mã bệnh nhân vào ViewBag để trang View dùng lại
+            ViewBag.MaBenhNhan = maBenhNhan;
+
+            return View(lichSuKhaoSat);
+        }
+        public async Task<IActionResult> ThongKe()
+        {
+            var data = await _context.ChiTietKhaoSats.ToListAsync();
+            ViewBag.TongSoLuot = data.Count;
+            ViewBag.DiemTB = data.Any() ? Math.Round(data.Average(c => c.DiemLikert), 1) : 0;
+
+            // Nhóm dữ liệu cho biểu đồ thống kê thuốc
+            var thongKeThuoc = data.GroupBy(c => c.MaThuoc)
+                .Select(g => new { TenThuoc = g.Key, DiemTB = g.Average(c => c.DiemLikert) }).ToList();
+
+            return View(thongKeThuoc);
+        }
     }
 }

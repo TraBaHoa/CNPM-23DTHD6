@@ -16,6 +16,7 @@ public partial class PhieuCanhBaoAdr
     public string NoiDungCanhBao { get; set; } = null!;
 
     public virtual Thuoc MaThuocNavigation { get; set; } = null!;
+    public bool DaXuLy { get; set; }
 }
 
 

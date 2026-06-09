@@ -4,6 +4,7 @@ using MedRateSystem.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MedRateSystem.Migrations
 {
     [DbContext(typeof(MedRateContext))]
-    partial class MedRateContextModelSnapshot : ModelSnapshot
+    [Migration("20260609152549_ThemCotNhanXet")]
+    partial class ThemCotNhanXet
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,19 +100,7 @@ namespace MedRateSystem.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<int>("DiemHieuQua")
-                        .HasColumnType("int");
-
                     b.Property<int>("DiemLikert")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DiemTacDungPhu")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DiemTienLoi")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DiemTongThe")
                         .HasColumnType("int");
 
                     b.Property<string>("MoTaTrieuChung")
