@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MedRateSystem.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
-using MedRateSystem.Models;
+using MedRateSystem.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,71 +13,60 @@ namespace MedRateSystem.Controllers
     public class AdminController : Controller
     {
         private readonly MedRateContext _context;
-
-        public AdminController(MedRateContext context)
-        {
-            _context = context;
-        }
+        public AdminController(MedRateContext context) { _context = context; }
 
         // MÀN HÌNH DASHBOARD TRUNG TÂM CỦA BÁC SĨ (Đã nâng cấp ADR Log)
         public async Task<IActionResult> Dashboard()
         {
-            // 1. Lấy danh sách tất cả các loại thuốc
-            var danhSachThuoc = await _context.Set<Thuoc>().ToListAsync();
-
-            // 2. Tạo một danh sách lưu trữ kết quả tính toán tổng quan
-            var thongKeThuoc = new List<ThuocThongKeViewModel>();
-
-            // 3. TRUY VẤN NÂNG CẤP: Lấy danh sách các ca gặp tác dụng phụ cụ thể để làm Nhật ký biến cố
-            var danhSachBienCo = await _context.Set<ChiTietKhaoSat>()
-                                               .Where(c => c.CoTacDungPhu == true)
-                                               .Join(_context.Set<Thuoc>(),
-                                                     cc => cc.MaThuoc,
-                                                     t => t.MaThuoc,
-                                                     (cc, t) => new BienCoLamSangViewModel
-                                                     {
-                                                         MaPhieu = cc.MaPhieu,
-                                                         TenThuoc = t.TenThuoc,
-                                                         DiemLikert = cc.DiemLikert,
-                                                         MoTaTrieuChung = cc.MoTaTrieuChung ?? ""
-                                                     })
-                                               .ToListAsync();
-
-            // Đưa danh sách biến cố vào ViewBag để truyền song song ra giao diện View
-            ViewBag.DanhSachBienCo = danhSachBienCo;
-
-            // 4. Vòng lặp tính toán thống kê tổng quan từng đầu thuốc
-            foreach (var thuoc in danhSachThuoc)
+            // Kiểm tra session để đảm bảo tính bảo mật
+            if (HttpContext.Session.GetString("Role") != "Admin")
             {
-                var danhGiaThuoc = await _context.ChiTietKhaoSats // Đảm bảo gọi đúng DbContext
-                                 .Where(c => c.MaThuoc == thuoc.MaThuoc)
-                                 .ToListAsync();
-
-                double diemTrungBinh = 5.0;
-                double tyLeADR = 0.0;
-
-                if (danhGiaThuoc.Any())
-                {
-                    // Công thức tính điểm Likert trung bình
-                    diemTrungBinh = danhGiaThuoc.Average(c => c.DiemLikert);
-
-                    // Công thức tính tỷ lệ ADR
-                    int soCaADR = danhGiaThuoc.Count(c => c.CoTacDungPhu == true);
-                    tyLeADR = ((double)soCaADR / danhGiaThuoc.Count) * 100;
-                }
-
-                thongKeThuoc.Add(new ThuocThongKeViewModel
-                {
-                    MaThuoc = thuoc.MaThuoc,
-                    TenThuoc = thuoc.TenThuoc,
-                    NhaSanXuat = thuoc.NhaSanXuat ?? "",
-                    DiemLikertTB = Math.Round(diemTrungBinh, 1),
-                    TyLeADR = Math.Round(tyLeADR, 1),
-                    TongSoLuotDanhGia = danhGiaThuoc.Count
-                });
+                return RedirectToAction("LoginAdmin", "Account");
             }
 
+            // 1. Lấy dữ liệu thống kê (Tối ưu bằng LINQ GroupBy)
+            var thongKeThuoc = await _context.ChiTietKhaoSats
+                .GroupBy(c => new {
+                    c.MaThuoc,
+                    TenThuoc = c.MaThuocNavigation != null ? c.MaThuocNavigation.TenThuoc : "N/A",
+                    NhaSanXuat = c.MaThuocNavigation != null ? c.MaThuocNavigation.NhaSanXuat : ""
+                })
+                .Select(g => new ThuocThongKeViewModel
+                {
+                    MaThuoc = g.Key.MaThuoc ?? "N/A",
+                    TenThuoc = g.Key.TenThuoc ?? "N/A",
+                    NhaSanXuat = g.Key.NhaSanXuat ?? "",
+                    DiemLikertTB = Math.Round(g.Average(x => (double)x.DiemLikert), 1),
+                    TyLeADR = Math.Round(g.Count(x => x.CoTacDungPhu == true) * 100.0 / g.Count(), 1),
+                    TongSoLuotDanhGia = g.Count()
+                })
+                .ToListAsync();
+
+            // 2. Lấy danh sách biến cố
+            var danhSachBienCo = await _context.ChiTietKhaoSats
+                .Where(c => c.CoTacDungPhu == true)
+                .Select(c => new BienCoLamSangViewModel
+                {
+                    MaPhieu = c.MaPhieu,
+                    TenThuoc = c.MaThuocNavigation != null ? c.MaThuocNavigation.TenThuoc : "N/A",
+                    DiemLikert = c.DiemLikert,
+                    MoTaTrieuChung = c.MoTaTrieuChung ?? "Không có mô tả"
+                })
+                .ToListAsync();
+
+            ViewBag.DanhSachBienCo = danhSachBienCo;
+
             return View(thongKeThuoc);
+        }
+
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            var role = HttpContext.Session.GetString("Role");
+            // Nếu không phải Admin thì chặn lại
+            if (role != "Admin")
+            {
+                context.Result = RedirectToAction("Login", "Khaosat");
+            }
         }
 
         public async Task<IActionResult> PhantichAbcVen()
@@ -119,28 +110,43 @@ namespace MedRateSystem.Controllers
             }
             return View(danhSachThuoc);
         }
-    }
 
-    // =========================================================
-    // CÁC CLASS VIEWMODEL PHỤ PHỤC VỤ HIỂN THỊ DỮ LIỆU
 
-    // 1. ViewModel dành cho bảng thống kê tổng quan
-    public class ThuocThongKeViewModel
-    {
-        public string MaThuoc { get; set; } = "";
-        public string TenThuoc { get; set; } = "";
-        public string NhaSanXuat { get; set; } = "";
-        public double DiemLikertTB { get; set; }
-        public double TyLeADR { get; set; }
-        public int TongSoLuotDanhGia { get; set; }
-    }
+        // --- THÊM VÀO AdminController.cs ---
 
-    // 2. ViewModel mới bổ sung dành cho bảng Nhật ký triệu chứng (ADR Log)
-    public class BienCoLamSangViewModel
-    {
-        public int MaPhieu { get; set; }
-        public string TenThuoc { get; set; } = "";
-        public int DiemLikert { get; set; }
-        public string MoTaTrieuChung { get; set; } = "";
+        public IActionResult QuanLyBacSi()
+        {
+            var list = _context.BacSi.ToList(); // Gọi DbSet<BacSi>
+            return View(list);
+        }
+
+        // Danh sách Bệnh nhân (Lấy từ bảng BenhNhan)
+        public IActionResult QuanLyBenhNhan()
+        {
+            var list = _context.BenhNhans.ToList(); // Gọi DbSet<BenhNhan>
+            return View(list);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> XoaBacSi(string id)
+        {
+            var bs = await _context.BacSi.FindAsync(id);
+            if (bs != null) { _context.BacSi.Remove(bs); await _context.SaveChangesAsync(); }
+            return RedirectToAction("QuanLyBacSi");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> XoaBenhNhan(string id)
+        {
+            var bn = await _context.BenhNhans.FindAsync(id);
+            if (bn != null) { _context.BenhNhans.Remove(bn); await _context.SaveChangesAsync(); }
+            return RedirectToAction("QuanLyBenhNhan");
+        }
+
+        // =========================================================
+        // CÁC CLASS VIEWMODEL PHỤ PHỤC VỤ HIỂN THỊ DỮ LIỆU
+
+        // 1. ViewModel dành cho bảng thống kê tổng quan
+        // 2. ViewModel mới bổ sung dành cho bảng Nhật ký triệu chứng (ADR Log)
     }
 }

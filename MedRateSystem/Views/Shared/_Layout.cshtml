@@ -4,40 +4,64 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - MedRateSystem</title>
-    
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/MedRateSystem.styles.css" asp-append-version="true" />
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-            body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
-            .navbar-brand { font-weight: 700; letter-spacing: -0.5px; }
-            .footer { font-size: 0.85rem; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
+        .navbar-brand { font-weight: 700; color: #0d6efd !important; }
+        .nav-link { transition: 0.3s; }
+        .nav-link:hover { color: #0d6efd !important; }
     </style>
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm mb-4">
-            <div class="container-fluid">
-                <a class="navbar-brand text-primary" asp-controller="Khaosat" asp-action="Login">
-                    🛡️ MedRateSystem
-                </a>
+            <div class="container">
+                <a class="navbar-brand" asp-controller="Khaosat" asp-action="Index">🛡️ MedRateSystem</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link fw-semibold" asp-controller="Khaosat" asp-action="Login">
-                                ➔ Khảo Sát Bệnh Nhân
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-semibold text-danger" asp-controller="Admin" asp-action="Dashboard">
-                                📊 Dashboard Bác Sĩ
-                            </a>
-                        </li>
+                        @using Microsoft.AspNetCore.Http
+                        @{
+                            var maUser = Context.Session.GetString("MaUser");
+                            var role = Context.Session.GetString("Role");
+                        }
+
+                        @if (string.IsNullOrEmpty(maUser))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold" asp-controller="Auth" asp-action="Register">Đăng ký</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold" asp-controller="Auth" asp-action="Login">Đăng nhập</a>
+                            </li>
+                            <li class="nav-item border-start mx-2"></li>
+                            <li class="nav-item">
+                                <a class="nav-link text-muted small" asp-controller="Account" asp-action="LoginAdmin">Bác sĩ đăng nhập</a>
+                            </li>
+                        }
+                        else
+                        {
+                            @if (role == "Admin")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link fw-semibold text-danger" asp-controller="Admin" asp-action="Dashboard">📊 Bảng điều khiển (Admin)</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link fw-semibold" asp-controller="Khaosat" asp-action="Index">📋 Khảo sát của tôi</a>
+                                </li>
+                            }
+                            <li class="nav-item border-start mx-2"></li>
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold text-secondary" asp-controller="Auth" asp-action="Logout">Thoát (@maUser)</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
@@ -53,14 +77,12 @@
     <footer class="border-top footer text-muted text-center py-4 bg-white">
         <div class="container">
             <p class="mb-1">&copy; 2026 - MedRateSystem | Hệ thống Giám sát & Đánh giá An toàn Thuốc</p>
-            <small>Đồ án Phát triển Hệ thống Thông tin Y tế</small>
         </div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

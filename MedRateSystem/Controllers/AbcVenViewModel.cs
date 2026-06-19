@@ -1,4 +1,4 @@
-﻿namespace MedRateSystem.Models
+﻿namespace MedRateSystem.Controllers
 {
     public class AbcVenViewModel
     {
