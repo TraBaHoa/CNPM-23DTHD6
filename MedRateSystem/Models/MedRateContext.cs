@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-
+using MedRateSystem.Models;
 namespace MedRateSystem.Models;
 
 public partial class MedRateContext : DbContext
@@ -18,7 +18,7 @@ public partial class MedRateContext : DbContext
     public virtual DbSet<DonThuoc> DonThuocs { get; set; }
     public virtual DbSet<ChiTietDonThuoc> ChiTietDonThuocs { get; set; }
     public virtual DbSet<BenhNhan> BenhNhans { get; set; }
-
+    public virtual DbSet<BacSi> BacSi { get; set; }
     public virtual DbSet<ChiTietKhaoSat> ChiTietKhaoSats { get; set; }
 
     public virtual DbSet<PhieuCanhBaoAdr> PhieuCanhBaoAdrs { get; set; }
