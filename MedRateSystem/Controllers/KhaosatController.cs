@@ -15,29 +15,83 @@ namespace MedRateSystem.Controllers
         public IActionResult Login() => View();
 
         [HttpPost]
-        public IActionResult Login(string maBenhNhan)
+        [ValidateAntiForgeryToken]
+        public IActionResult Login(string taiKhoan, string matKhau)
         {
-            var benhNhan = _context.BenhNhans.FirstOrDefault(b => b.MaBenhNhan == maBenhNhan);
-            if (benhNhan == null) { ViewBag.Error = "Mã không tồn tại!"; return View(); }
-            return RedirectToAction("Index", new { id = maBenhNhan });
+            // Tìm bệnh nhân trong bảng BenhNhan
+            var user = _context.BenhNhans.FirstOrDefault(b => b.TaiKhoan == taiKhoan && b.MatKhau == matKhau);
+
+            if (user == null)
+            {
+                ViewBag.Error = "Tài khoản hoặc mật khẩu không chính xác!";
+                return View();
+            }
+
+            // Lưu Session
+            HttpContext.Session.SetString("MaUser", user.MaBenhNhan);
+            HttpContext.Session.SetString("Role", "User"); // Gán cứng là User vì đây là bảng BenhNhan
+
+            return RedirectToAction("Index", "Khaosat");
         }
 
-        public async Task<IActionResult> Index(string id)
+        [HttpPost]
+        public IActionResult LoginAdmin(string taiKhoan, string matKhau)
         {
-            var benhNhan = await _context.BenhNhans.FirstOrDefaultAsync(b => b.MaBenhNhan == id);
-            if (benhNhan == null) return RedirectToAction("Login");
+            // Tìm bác sĩ trong bảng BacSi
+            var bs = _context.BacSi.FirstOrDefault(b => b.TaiKhoan == taiKhoan && b.MatKhau == matKhau);
+
+            if (bs == null)
+            {
+                ViewBag.Error = "Tài khoản hoặc mật khẩu không chính xác!";
+                return View();
+            }
+
+            // Lưu Session
+            HttpContext.Session.SetString("MaUser", bs.MaBacSi);
+            HttpContext.Session.SetString("Role", "Admin"); // Gán cứng là Admin
+
+            return RedirectToAction("Dashboard", "Admin");
+        }
+
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login", "Khaosat");
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            // Lấy MaBenhNhan từ Session thay vì từ tham số URL
+            string? maBenhNhan = HttpContext.Session.GetString("MaUser");
+
+            // Nếu chưa đăng nhập hoặc session hết hạn, quay về trang đăng nhập
+            if (string.IsNullOrEmpty(maBenhNhan))
+            {
+                return RedirectToAction("Login", "Khaosat");
+            }
+
+            // Lấy thông tin bệnh nhân
+            var benhNhan = await _context.BenhNhans.FirstOrDefaultAsync(b => b.MaBenhNhan == maBenhNhan);
+            if (benhNhan == null) return RedirectToAction("Login", "Khaosat");
+
             ViewBag.BenhNhan = benhNhan;
 
-            var donThuoc = await _context.DonThuocs.Where(d => d.MaBenhNhan == id)
-                                         .OrderByDescending(d => d.NgayKeDon).FirstOrDefaultAsync();
+            // Tìm đơn thuốc mới nhất của bệnh nhân này
+            var donThuoc = await _context.DonThuocs
+                                         .Where(d => d.MaBenhNhan == maBenhNhan)
+                                         .OrderByDescending(d => d.NgayKeDon)
+                                         .FirstOrDefaultAsync();
 
             List<Thuoc> danhSachThuoc = new List<Thuoc>();
             if (donThuoc != null)
             {
-                var maThuocList = await _context.ChiTietDonThuocs.Where(ct => ct.MaDonThuoc == donThuoc.MaDonThuoc)
-                                                .Select(ct => ct.MaThuoc).ToListAsync();
-                danhSachThuoc = await _context.Thuocs.Where(t => maThuocList.Contains(t.MaThuoc)).ToListAsync();
+                // Tối ưu: Lấy trực tiếp danh sách thuốc thông qua Navigation Property (nếu Model của bạn đã định nghĩa quan hệ)
+                danhSachThuoc = await _context.ChiTietDonThuocs
+                                                .Where(ct => ct.MaDonThuoc == donThuoc.MaDonThuoc)
+                                                .Select(ct => ct.MaThuocNavigation) // Giả định MaThuocNavigation là thuộc tính định hướng trong EF
+                                                .ToListAsync();
             }
+
             return View(danhSachThuoc);
         }
 

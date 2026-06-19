@@ -15,7 +15,7 @@ public partial class ChiTietKhaoSat
     public string? MoTaTrieuChung { get; set; }
 
     public virtual PhieuKhaoSat MaPhieuNavigation { get; set; } = null!;
-    public virtual Thuoc MaThuocNavigation { get; set; } = null!;
+    public virtual Thuoc? MaThuocNavigation { get; set; } = null!;
     public int DiemTongThe { get; set; }
     public int DiemHieuQua { get; set; }
     public int DiemTacDungPhu { get; set; }

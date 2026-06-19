@@ -1,0 +1,30 @@
+﻿@{
+    ViewData["Title"] = "Đăng nhập Bác sĩ";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white text-center">🔐 ĐĂNG NHẬP BÁC SĨ</div>
+                <div class="card-body">
+                    <form asp-action="LoginAdmin" method="post">
+                        <div class="mb-3">
+                            <label>Tài khoản</label>
+                            <input name="taiKhoan" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label>Mật khẩu</label>
+                            <input name="matKhau" type="password" class="form-control" required />
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">Đăng nhập</button>
+                    </form>
+                    @if (ViewBag.Error != null)
+                    {
+                        <p class="text-danger mt-2">@ViewBag.Error</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
