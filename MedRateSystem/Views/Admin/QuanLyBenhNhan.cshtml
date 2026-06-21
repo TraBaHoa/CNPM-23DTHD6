@@ -1,0 +1,65 @@
+@model IEnumerable<MedRateSystem.Models.BenhNhan>
+@{
+    ViewData["Title"] = "Quản lý Bệnh nhân";
+}
+
+<style>
+    body { background-color: #f0fdfa; font-family: 'Inter', sans-serif; }
+    .admin-card {
+        background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(13, 148, 136, 0.05); border: 1px solid #ccfbf1;
+    }
+    .bg-teal { background-color: #0d9488 !important; color: white !important; }
+    .text-teal { color: #0d9488 !important; }
+    .table-admin th { background-color: #0f766e !important; color: white; font-weight: 600; }
+    .table-admin tbody tr:hover { background-color: #f0fdfa; }
+</style>
+
+<div class="container mt-4 pb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="text-teal fw-bold mb-0"><i class="bi bi-people-fill me-2"></i>Danh sách Bệnh nhân</h3>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Quay lại Dashboard</a>
+    </div>
+
+    <div class="admin-card overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-admin align-middle mb-0">
+                <thead class="text-center">
+                    <tr>
+                        <th>Mã BN</th>
+                        <th class="text-start">Họ Tên</th>
+                        <th>Tài Khoản</th>
+                        <th>Số Điện Thoại</th>
+                        <th>Giới Tính</th>
+                        <th>Chức Năng</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">
+                    @if(!Model.Any()) {
+                        <tr><td colspan="6" class="text-muted p-4">Không có dữ liệu bệnh nhân.</td></tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="badge bg-secondary">@item.MaBenhNhan</span></td>
+                            <td class="text-start fw-bold">@item.HoTen</td>
+                            <td><span class="text-primary fw-semibold">@item.TaiKhoan</span></td>
+                            <td>@item.SoDienThoai</td>
+                            <td>@item.GioiTinh</td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-1">
+                                    <a asp-action="LichSuDanhGia" asp-route-id="@item.MaBenhNhan" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-clock-history"></i> Lịch sử
+                                    </a>
+                                    <form asp-action="XoaBenhNhan" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa bệnh nhân này và tất cả dữ liệu liên quan?');">
+                                        <input type="hidden" name="id" value="@item.MaBenhNhan" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i> Xóa</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

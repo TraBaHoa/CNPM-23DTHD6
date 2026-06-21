@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace MedRateSystem.Models;
@@ -10,6 +10,8 @@ public partial class PhieuKhaoSat
     public string MaBenhNhan { get; set; } = null!;
 
     public DateTime? ThoiGianLamPhieu { get; set; }
+
+    public string? TinhTrangBenh { get; set; }
 
     public string? GhiChuNhanXet { get; set; }
 

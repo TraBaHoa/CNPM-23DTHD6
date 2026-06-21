@@ -1,0 +1,148 @@
+@{
+    var bn = ViewBag.BenhNhan as MedRateSystem.Models.BenhNhan;
+    ViewData["Title"] = "Thống kê đánh giá";
+    
+    int total = ViewBag.TongSoDanhGia ?? 0;
+    int s5 = ViewBag.Sao5 ?? 0;
+    int s4 = ViewBag.Sao4 ?? 0;
+    int s3 = ViewBag.Sao3 ?? 0;
+    int s2 = ViewBag.Sao2 ?? 0;
+    int s1 = ViewBag.Sao1 ?? 0;
+    
+    double getPercent(int count) {
+        if(total == 0) return 0;
+        return (count * 100.0) / total;
+    }
+}
+
+<style>
+    .stat-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background-color: white;
+        padding: 1.5rem;
+        transition: 0.2s;
+    }
+    .stat-card:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .progress {
+        height: 10px;
+        border-radius: 5px;
+        background-color: #f1f5f9;
+    }
+    
+    .progress-bar-warning { background-color: #f59e0b; }
+    .progress-bar-primary { background-color: #2563eb; }
+    
+    .chart-label {
+        width: 35px;
+        font-size: 0.9rem;
+        color: #475569;
+        font-weight: 500;
+    }
+    .chart-value {
+        width: 35px;
+        text-align: right;
+        font-size: 0.9rem;
+        color: #475569;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container mt-4 mb-5" style="max-width: 900px;">
+    
+    <!-- HEADER VÀ TABS -->
+    @await Html.PartialAsync("_KhaosatHeaderTabs")
+
+    <!-- CONTENT -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card shadow-sm h-100 text-center">
+                <div class="text-muted small fw-semibold mb-2">Tổng đánh giá</div>
+                <h3 class="fw-bold mb-0" style="color: #0f172a;">@total <span class="fs-6 text-muted fw-normal">lượt</span></h3>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card shadow-sm h-100 text-center">
+                <div class="text-muted small fw-semibold mb-2">Điểm trung bình</div>
+                <h3 class="fw-bold mb-0" style="color: #f59e0b;">@(ViewBag.DiemTrungBinh?.ToString("0.0") ?? "0.0") <span class="fs-6 text-muted fw-normal">/ 5</span></h3>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card shadow-sm h-100 text-center">
+                <div class="text-muted small fw-semibold mb-2">Hiệu quả TB</div>
+                <h3 class="fw-bold mb-0" style="color: #2563eb;">@(ViewBag.HieuQuaTB?.ToString("0.0") ?? "0.0") <span class="fs-6 text-muted fw-normal">/ 5</span></h3>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card shadow-sm h-100 text-center">
+                <div class="text-muted small fw-semibold mb-2">Tiện lợi TB</div>
+                <h3 class="fw-bold mb-0" style="color: #10b981;">@(ViewBag.TienLoiTB?.ToString("0.0") ?? "0.0") <span class="fs-6 text-muted fw-normal">/ 5</span></h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Phân bố sao đánh giá -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100" style="border: 1px solid #e2e8f0 !important;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-4" style="color: #0f172a;"><i class="bi bi-star-half text-warning me-2"></i>Phân bố điểm đánh giá</h6>
+                    
+                    @{ var stars = new[] { (5, s5), (4, s4), (3, s3), (2, s2), (1, s1) }; }
+                    @foreach(var item in stars)
+                    {
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="chart-label">@item.Item1<span class="text-warning ms-1" style="font-size:0.8rem">&#9733;</span></div>
+                            <div class="flex-grow-1 px-3">
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-warning" role="progressbar" style="width: @getPercent(item.Item2)%"></div>
+                                </div>
+                            </div>
+                            <div class="chart-value">@item.Item2</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Thuốc được đánh giá cao -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100" style="border: 1px solid #e2e8f0 !important;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-4" style="color: #0f172a;"><i class="bi bi-award text-primary me-2"></i>Thuốc được đánh giá cao</h6>
+                    
+                    @if(ViewBag.ThuocDuocDanhGiaCao != null)
+                    {
+                        int index = 1;
+                        foreach(var item in ViewBag.ThuocDuocDanhGiaCao)
+                        {
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="text-muted fw-bold me-3" style="width: 20px;">#@index</div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="small fw-semibold" style="color: #334155;">@item.TenThuoc</span>
+                                        <span class="small text-muted fw-medium">@item.DiemTB.ToString("0.0") <span style="color:#f59e0b">&#9733;</span> (@item.SoLuot)</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-primary" role="progressbar" style="width: @((item.DiemTB / 5.0) * 100)%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            Chưa có dữ liệu thống kê
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

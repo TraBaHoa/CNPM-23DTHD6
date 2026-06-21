@@ -1,57 +1,117 @@
-﻿@model IEnumerable<MedRateSystem.ViewModels.ThuocThongKeViewModel>
+@model IEnumerable<MedRateSystem.ViewModels.ThuocThongKeViewModel>
 @{
-    ViewData["Title"] = "Dashboard Quản Trị Bác Sĩ";
+    ViewData["Title"] = "Bảng điều khiển Quản Trị";
 }
 
-<div class="container-fluid mt-4 px-4">
+<style>
+    /* Admin Theme (Teal) */
+    body { background-color: #f0fdfa; font-family: 'Inter', sans-serif; }
+    .admin-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(13, 148, 136, 0.05);
+        border: 1px solid #ccfbf1;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .admin-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(13, 148, 136, 0.1); }
+    .stat-icon {
+        width: 48px; height: 48px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 24px;
+    }
+    .text-teal { color: #0d9488 !important; }
+    .bg-teal-light { background-color: #ccfbf1 !important; color: #0f766e !important; }
+    .bg-teal { background-color: #0d9488 !important; color: white !important; }
+    .table-admin th { background-color: #0f766e !important; color: white; font-weight: 600; }
+    .table-admin tbody tr:hover { background-color: #f0fdfa; }
+</style>
+
+<div class="container-fluid mt-4 px-4 pb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-dark fw-bold mb-1">📊 BẢNG ĐIỀU KHIỂN Y TẾ</h2>
-        <a asp-controller="Admin" asp-action="QuanLyBacSi" class="btn btn-outline-primary">Quản lý Bác sĩ</a>
+        <div>
+            <h2 class="text-teal fw-bold mb-1"><i class="bi bi-heart-pulse-fill me-2"></i>Bảng điều khiển Y Tế</h2>
+            <p class="text-muted mb-0">Hệ thống Giám sát & Đánh giá An toàn Thuốc</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="Admin" asp-action="LichSuDanhGia" class="btn btn-outline-info"><i class="bi bi-clock-history me-1"></i> Lịch sử</a>
+            <a asp-controller="Admin" asp-action="QuanLyBacSi" class="btn bg-teal"><i class="bi bi-person-badge me-1"></i> Bác sĩ</a>
+            <a asp-controller="Admin" asp-action="QuanLyBenhNhan" class="btn btn-outline-secondary"><i class="bi bi-people me-1"></i> Bệnh nhân</a>
+        </div>
     </div>
     
-    <div class="row g-3 mb-4">
+    <div class="row g-4 mb-4">
         <div class="col-6 col-lg-3">
-            <div class="card p-3 border-start border-primary border-4 shadow-sm">
-                <div class="text-muted small text-uppercase fw-bold">Tổng số thuốc</div>
-                <div class="fs-2 fw-bold text-primary">@Model.Count()</div>
+            <div class="admin-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-bold mb-1">Tổng số thuốc</div>
+                        <div class="fs-2 fw-bold text-teal">@Model.Count()</div>
+                    </div>
+                    <div class="stat-icon bg-teal-light"><i class="bi bi-capsule"></i></div>
+                </div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card p-3 border-start border-success border-4 shadow-sm">
-                <div class="text-muted small text-uppercase fw-bold">Tổng ca khảo sát</div>
-                <div class="fs-2 fw-bold text-success">@Model.Sum(t => t.TongSoLuotDanhGia)</div>
+            <div class="admin-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-bold mb-1">Tổng ca khảo sát</div>
+                        <div class="fs-2 fw-bold text-primary">@Model.Sum(t => t.TongSoLuotDanhGia)</div>
+                    </div>
+                    <div class="stat-icon" style="background: #cfe2ff; color: #084298;"><i class="bi bi-clipboard2-check"></i></div>
+                </div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card p-3 border-start border-danger border-4 shadow-sm">
-                <div class="text-muted small text-uppercase fw-bold">Cảnh báo ADR cao</div>
-                <div class="fs-2 fw-bold text-danger">@Model.Count(t => t.TyLeADR > 5.0)</div>
+            <div class="admin-card p-4 h-100 border-start border-danger border-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-bold mb-1">Cảnh báo ADR > 5%</div>
+                        <div class="fs-2 fw-bold text-danger">@Model.Count(t => t.TyLeADR > 5.0)</div>
+                    </div>
+                    <div class="stat-icon" style="background: #f8d7da; color: #842029;"><i class="bi bi-exclamation-triangle"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="admin-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-bold mb-1">Phân tích ABC/VEN</div>
+                        <a asp-controller="Admin" asp-action="PhantichAbcVen" class="btn btn-sm bg-teal-light mt-1">Xem chi tiết <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                    <div class="stat-icon" style="background: #e0cffc; color: #512da8;"><i class="bi bi-pie-chart"></i></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4 mb-5">
+    <div class="row g-4 mb-4">
         <div class="col-lg-8">
-            <div class="card p-4 shadow-sm h-100">
-                <h6 class="text-muted">Chỉ số Likert trung bình từng thuốc</h6>
-                <canvas id="chartLikert" height="300"></canvas>
+            <div class="admin-card p-4 h-100">
+                <h6 class="text-teal fw-bold mb-4"><i class="bi bi-bar-chart-fill me-2"></i>Chỉ số Likert trung bình</h6>
+                <div style="height: 300px;">
+                    <canvas id="chartLikert"></canvas>
+                </div>
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="card p-4 shadow-sm h-100">
-                <h6 class="text-muted">Phân bổ tỷ lệ tác dụng phụ (ADR)</h6>
-                <canvas id="chartADR" height="300"></canvas>
+            <div class="admin-card p-4 h-100">
+                <h6 class="text-teal fw-bold mb-4"><i class="bi bi-pie-chart-fill me-2"></i>Tỷ lệ ADR</h6>
+                <div style="height: 300px;">
+                    <canvas id="chartADR"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="card shadow-sm mb-5">
-        <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between">
-            <span>📋 DANH SÁCH THUỐC & CHẤT LƯỢNG LÂM SÀNG</span>
+    <div class="admin-card overflow-hidden">
+        <div class="bg-teal text-white p-3 fw-bold d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-table me-2"></i>DANH SÁCH THUỐC & CHẤT LƯỢNG LÂM SÀNG</span>
         </div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light text-center">
+            <table class="table table-admin align-middle mb-0 text-center">
+                <thead>
                     <tr>
                         <th>Mã Thuốc</th>
                         <th class="text-start">Tên Thuốc</th>
@@ -60,19 +120,19 @@
                         <th>Điểm Likert TB</th>
                     </tr>
                 </thead>
-                <tbody class="text-center">
+                <tbody>
                     @foreach (var thuoc in Model)
                     {
                         <tr>
-                            <td><code>@thuoc.MaThuoc</code></td>
-                            <td class="text-start fw-bold text-primary">@thuoc.TenThuoc</td>
+                            <td><span class="badge bg-secondary">@thuoc.MaThuoc</span></td>
+                            <td class="text-start fw-bold text-teal">@thuoc.TenThuoc</td>
                             <td>@thuoc.TongSoLuotDanhGia</td>
                             <td>
                                 <span class="badge @(thuoc.TyLeADR > 5 ? "bg-danger" : "bg-success")">
                                     @thuoc.TyLeADR%
                                 </span>
                             </td>
-                            <td><span class="fw-bold">@thuoc.DiemLikertTB</span></td>
+                            <td><span class="fw-bold @(thuoc.DiemLikertTB >= 4 ? "text-success" : "text-warning")">@thuoc.DiemLikertTB <i class="bi bi-star-fill text-warning small"></i></span></td>
                         </tr>
                     }
                 </tbody>
@@ -84,25 +144,39 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // SỬA LỖI TẠI ĐÂY: Dùng ngoặc đơn bao quanh Html.Raw
-        rawData = JSON.parse('@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model))'.replace(/&quot;/g, '"'));
+        // Sửa lỗi Parse JSON một cách an toàn bằng cách sử dụng luôn Object
+        const rawData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
 
         if (rawData && rawData.length > 0) {
-        const labels = rawData.map(i => i.TenThuoc);
-        const dataLikert = rawData.map(i => i.DiemLikertTB);
-        const dataADR = rawData.map(i => i.TyLeADR);
+            const labels = rawData.map(i => i.TenThuoc);
+            const dataLikert = rawData.map(i => i.DiemLikertTB);
+            const dataADR = rawData.map(i => i.TyLeADR);
 
-        new Chart(document.getElementById('chartLikert'), {
-        type: 'bar',
-        data: { labels: labels, datasets: [{ label: 'Điểm Likert TB', data: dataLikert, backgroundColor: '#ffc107' }] },
-        options: { responsive: true, maintainAspectRatio: false }
-        });
+            new Chart(document.getElementById('chartLikert'), {
+                type: 'bar',
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        label: 'Điểm Likert TB', 
+                        data: dataLikert, 
+                        backgroundColor: '#0d9488',
+                        borderRadius: 4
+                    }] 
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
 
-        new Chart(document.getElementById('chartADR'), {
-        type: 'doughnut',
-        data: { labels: labels, datasets: [{ data: dataADR, backgroundColor: ['#dc3545', '#fd7e14', '#0d6efd', '#20c997'] }] },
-        options: { responsive: true, maintainAspectRatio: false }
-        });
+            new Chart(document.getElementById('chartADR'), {
+                type: 'doughnut',
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        data: dataADR, 
+                        backgroundColor: ['#dc3545', '#fd7e14', '#0d6efd', '#20c997', '#6f42c1', '#198754'] 
+                    }] 
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
         }
     </script>
 }

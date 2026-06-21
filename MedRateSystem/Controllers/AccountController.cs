@@ -1,4 +1,4 @@
-﻿using MedRateSystem.Models;
+using MedRateSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MedRateSystem.Controllers
@@ -23,8 +23,8 @@ namespace MedRateSystem.Controllers
                 HttpContext.Session.SetString("Role", "Admin");
                 return RedirectToAction("Dashboard", "Admin");
             }
-            ViewBag.Error = "Tài khoản bác sĩ không hợp lệ!";
-            return View("~/Views/Admin/LoginAdmin.cshtml");
+            ViewBag.Error = "Tài khoản hoặc mật khẩu bác sĩ không hợp lệ!";
+            return View();
         }
     }
 }

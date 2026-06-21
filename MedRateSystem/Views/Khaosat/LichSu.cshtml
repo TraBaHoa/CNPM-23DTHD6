@@ -1,30 +1,150 @@
-﻿@model IEnumerable<MedRateSystem.Models.ChiTietKhaoSat>
+@model IEnumerable<MedRateSystem.Models.ChiTietKhaoSat>
+@{
+    var bn = ViewBag.BenhNhan as MedRateSystem.Models.BenhNhan;
+    ViewData["Title"] = "Lịch sử đánh giá";
+}
 
-<div class="container mt-4">
-    <h3 class="fw-bold mb-4">📜 LỊCH SỬ ĐÁNH GIÁ THUỐC</h3>
-    <div class="card shadow-sm border-0">
-        <table class="table table-hover align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>Mã Phiếu</th>
-                    <th>Tên Thuốc</th>
-                    <th>Tổng thể</th>
-                    <th>Tác dụng phụ</th>
-                    <th>Nhận xét</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td>@item.MaPhieu</td>
-                        <td class="fw-bold">@item.MaThuocNavigation?.TenThuoc</td>
-                        <td>@item.DiemTongThe ★</td>
-                        <td>@(string.IsNullOrEmpty(item.MoTaTrieuChung) ? "Không" : item.MoTaTrieuChung)</td>
-                        <td>@item.NhanXet</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+<style>
+    .search-bar {
+        border-radius: 20px;
+        border: 1px solid #cbd5e1;
+        padding: 0.6rem 1.2rem 0.6rem 2.5rem;
+        background-color: white;
+    }
+    .search-bar:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        outline: none;
+    }
+    
+    .search-wrapper { position: relative; }
+    
+    .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+    
+    .review-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background-color: white;
+        margin-bottom: 1rem;
+        padding: 1.5rem;
+        transition: 0.2s;
+    }
+    .review-card:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .text-primary-custom { color: #2563eb; }
+    
+    .star-rating {
+        color: #f59e0b;
+        font-size: 1.1rem;
+    }
+    .star-rating-gray {
+        color: #e2e8f0;
+        font-size: 1.1rem;
+    }
+</style>
+
+<div class="container mt-4 mb-5" style="max-width: 900px;">
+    
+    <!-- HEADER VÀ TABS -->
+    @await Html.PartialAsync("_KhaosatHeaderTabs")
+
+    <!-- CONTENT -->
+    <div class="search-wrapper mb-4">
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" id="searchInput" class="form-control search-bar shadow-sm" placeholder="Tìm kiếm theo tên thuốc hoặc bệnh lý...">
+    </div>
+
+    <div id="reviewList">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <div class="review-card shadow-sm">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div>
+                            <h6 class="fw-bold mb-1" style="color: #0f172a;">@bn?.HoTen</h6>
+                            <div class="text-primary-custom fw-bold small"><i class="bi bi-capsule me-1"></i>@item.MaThuocNavigation?.TenThuoc</div>
+                            <div class="text-muted small mt-1">@item.MaPhieuNavigation?.TinhTrangBenh</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="star-rating mb-1">
+                                @for(int i=1; i<=5; i++)
+                                {
+                                    if(i <= item.DiemTongThe) { <span>&#9733;</span> }
+                                    else { <span class="star-rating-gray">&#9733;</span> }
+                                }
+                            </div>
+                            <div class="text-muted small">@item.MaPhieuNavigation?.ThoiGianLamPhieu?.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row text-center mb-3 py-2 rounded-3" style="background-color: #f8fafc; border: 1px solid #f1f5f9;">
+                        <div class="col-4 border-end border-light">
+                            <div class="small text-muted mb-1 fw-medium">Hiệu quả</div>
+                            <div class="star-rating" style="font-size: 0.95rem;">
+                                @for(int i=1; i<=5; i++) {
+                                    if(i <= item.DiemHieuQua) { <span>&#9733;</span> } else { <span class="star-rating-gray">&#9733;</span> }
+                                }
+                            </div>
+                        </div>
+                        <div class="col-4 border-end border-light">
+                            <div class="small text-muted mb-1 fw-medium">Tác dụng phụ</div>
+                            <div class="star-rating" style="font-size: 0.95rem;">
+                                @for(int i=1; i<=5; i++) {
+                                    if(i <= item.DiemTacDungPhu) { <span>&#9733;</span> } else { <span class="star-rating-gray">&#9733;</span> }
+                                }
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="small text-muted mb-1 fw-medium">Tiện lợi</div>
+                            <div class="star-rating" style="font-size: 0.95rem;">
+                                @for(int i=1; i<=5; i++) {
+                                    if(i <= item.DiemTienLoi) { <span>&#9733;</span> } else { <span class="star-rating-gray">&#9733;</span> }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(item.NhanXet))
+                    {
+                        <div class="text-muted fst-italic small border-start border-3 border-primary ps-3 mt-2" style="border-color: #2563eb !important;">
+                            "@item.NhanXet"
+                        </div>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-inbox fs-1 text-light"></i>
+                <p class="mt-2">Chưa có dữ liệu đánh giá nào.</p>
+            </div>
+        }
     </div>
 </div>
+
+<script>
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let cards = document.querySelectorAll('.review-card');
+        
+        cards.forEach(card => {
+            let text = card.innerText.toLowerCase();
+            if(text.includes(filter)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+</script>

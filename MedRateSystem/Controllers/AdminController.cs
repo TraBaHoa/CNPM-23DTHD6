@@ -1,4 +1,4 @@
-﻿using MedRateSystem.Models;
+using MedRateSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +24,18 @@ namespace MedRateSystem.Controllers
                 return RedirectToAction("LoginAdmin", "Account");
             }
 
-            // 1. Lấy dữ liệu thống kê (Tối ưu bằng LINQ GroupBy)
+            // 1. Tự động khắc phục dữ liệu cũ: Nếu Điểm tác dụng phụ <= 3 thì tự động ghi nhận là Có Tác Dụng Phụ
+            var oldData = await _context.ChiTietKhaoSats.Where(c => c.CoTacDungPhu == false && c.DiemTacDungPhu <= 3).ToListAsync();
+            if (oldData.Any())
+            {
+                foreach(var c in oldData) {
+                    c.CoTacDungPhu = true;
+                    c.MoTaTrieuChung = string.IsNullOrEmpty(c.NhanXet) ? "Có dấu hiệu ADR" : c.NhanXet;
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            // 2. Lấy dữ liệu thống kê (Tối ưu bằng LINQ GroupBy)
             var thongKeThuoc = await _context.ChiTietKhaoSats
                 .GroupBy(c => new {
                     c.MaThuoc,
@@ -65,7 +76,7 @@ namespace MedRateSystem.Controllers
             // Nếu không phải Admin thì chặn lại
             if (role != "Admin")
             {
-                context.Result = RedirectToAction("Login", "Khaosat");
+                context.Result = RedirectToAction("LoginAdmin", "Account");
             }
         }
 
@@ -145,6 +156,28 @@ namespace MedRateSystem.Controllers
 
         // =========================================================
         // CÁC CLASS VIEWMODEL PHỤ PHỤC VỤ HIỂN THỊ DỮ LIỆU
+
+        public async Task<IActionResult> LichSuDanhGia(string? id)
+        {
+            var query = _context.ChiTietKhaoSats
+                .Include(c => c.MaThuocNavigation)
+                .Include(c => c.MaPhieuNavigation)
+                .ThenInclude(p => p.MaBenhNhanNavigation)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                query = query.Where(c => c.MaPhieuNavigation.MaBenhNhan == id);
+                ViewBag.TenBenhNhan = await _context.BenhNhans
+                    .Where(b => b.MaBenhNhan == id)
+                    .Select(b => b.HoTen)
+                    .FirstOrDefaultAsync();
+                ViewBag.MaBenhNhan = id;
+            }
+
+            var lichSu = await query.OrderByDescending(c => c.MaPhieuNavigation.ThoiGianLamPhieu).ToListAsync();
+            return View(lichSu);
+        }
 
         // 1. ViewModel dành cho bảng thống kê tổng quan
         // 2. ViewModel mới bổ sung dành cho bảng Nhật ký triệu chứng (ADR Log)

@@ -1,0 +1,71 @@
+@{
+    var bn = ViewBag.BenhNhan as MedRateSystem.Models.BenhNhan;
+    string currentAction = ViewContext.RouteData.Values["Action"]?.ToString() ?? "";
+}
+
+<style>
+    .nav-tabs-custom {
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .nav-tabs-custom .nav-link {
+        color: #64748b;
+        font-weight: 500;
+        border: none;
+        padding: 1rem 1.5rem;
+        position: relative;
+        transition: color 0.2s;
+    }
+    .nav-tabs-custom .nav-link:hover {
+        color: #2563eb;
+    }
+    .nav-tabs-custom .nav-link.active {
+        color: #2563eb;
+        background: transparent;
+        border: none;
+        font-weight: 600;
+    }
+    .nav-tabs-custom .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background-color: #2563eb;
+        border-radius: 3px 3px 0 0;
+    }
+    .text-warning-custom { color: #f59e0b; }
+</style>
+
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-body p-4 pb-0">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="fw-bold mb-1" style="color: #0f172a;">Đánh giá thuốc điều trị</h4>
+                <div class="text-muted small">Bệnh nhân: <span class="fw-bold" style="color: #2563eb;">@bn?.HoTen</span></div>
+            </div>
+            <div class="text-end">
+                <span class="fw-bold me-2 text-muted" style="font-size: 0.95rem;">@(ViewBag.TongSoDanhGia ?? 0) đánh giá</span>
+                <span class="fw-bold text-warning-custom fs-5">&#9733; @(ViewBag.DiemTrungBinh?.ToString("0.0") ?? "0.0")</span>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs nav-tabs-custom" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link @(currentAction == "Index" ? "active" : "")" asp-controller="Khaosat" asp-action="Index">
+                    <i class="bi bi-ui-checks me-1"></i> Đánh giá
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(currentAction == "LichSu" ? "active" : "")" asp-controller="Khaosat" asp-action="LichSu">
+                    <i class="bi bi-clock-history me-1"></i> Lịch sử
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(currentAction == "ThongKe" ? "active" : "")" asp-controller="Khaosat" asp-action="ThongKe">
+                    <i class="bi bi-bar-chart-line me-1"></i> Thống kê
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

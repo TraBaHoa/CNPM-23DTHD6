@@ -17,10 +17,32 @@ namespace MedRateSystem.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.5")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("MedRateSystem.Models.BacSi", b =>
+                {
+                    b.Property<string>("MaBacSi")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("HoTen")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MatKhau")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TaiKhoan")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("MaBacSi");
+
+                    b.ToTable("BacSi");
+                });
 
             modelBuilder.Entity("MedRateSystem.Models.BenhNhan", b =>
                 {
@@ -54,10 +76,6 @@ namespace MedRateSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("VaiTro")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("MaBenhNhan")
                         .HasName("PK__BenhNhan__22A8B330A7903BBE");
 
@@ -75,21 +93,12 @@ namespace MedRateSystem.Migrations
                     b.Property<string>("CachDung")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
                     b.Property<int?>("SoLuong")
                         .HasColumnType("int");
-
-                    b.Property<string>("ThuocMaThuoc")
-                        .IsRequired()
-                        .HasColumnType("varchar(20)");
 
                     b.HasKey("MaDonThuoc", "MaThuoc");
 
                     b.HasIndex("MaThuoc");
-
-                    b.HasIndex("ThuocMaThuoc");
 
                     b.ToTable("ChiTietDonThuoc", (string)null);
                 });
@@ -216,6 +225,9 @@ namespace MedRateSystem.Migrations
                     b.Property<DateTime?>("ThoiGianLamPhieu")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("TinhTrangBenh")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("MaPhieu");
 
                     b.HasIndex("MaBenhNhan");
@@ -274,19 +286,11 @@ namespace MedRateSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MedRateSystem.Models.Thuoc", "MaThuocNavigation")
+                    b.HasOne("MedRateSystem.Models.Thuoc", "Thuoc")
                         .WithMany()
                         .HasForeignKey("MaThuoc")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("MedRateSystem.Models.Thuoc", "Thuoc")
-                        .WithMany()
-                        .HasForeignKey("ThuocMaThuoc")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MaThuocNavigation");
 
                     b.Navigation("Thuoc");
                 });

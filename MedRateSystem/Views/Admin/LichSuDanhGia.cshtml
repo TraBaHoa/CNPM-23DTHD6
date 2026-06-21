@@ -1,0 +1,94 @@
+@model IEnumerable<MedRateSystem.Models.ChiTietKhaoSat>
+@{
+    ViewData["Title"] = "Lịch sử Đánh giá";
+    var tenBenhNhan = ViewBag.TenBenhNhan as string;
+}
+
+<style>
+    body { background-color: #f0fdfa; font-family: 'Inter', sans-serif; }
+    .admin-card {
+        background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(13, 148, 136, 0.05); border: 1px solid #ccfbf1;
+    }
+    .text-teal { color: #0d9488 !important; }
+    .bg-teal { background-color: #0d9488 !important; color: white !important; }
+    .table-admin th { background-color: #0f766e !important; color: white; font-weight: 600; }
+    .table-admin tbody tr:hover { background-color: #f0fdfa; }
+</style>
+
+<div class="container mt-4 pb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="text-teal fw-bold mb-0">
+            <i class="bi bi-clock-history me-2"></i>
+            @(string.IsNullOrEmpty(tenBenhNhan) ? "Tất cả Lịch sử Đánh giá Toàn hệ thống" : $"Lịch sử Đánh giá của: {tenBenhNhan}")
+        </h3>
+        <div>
+            @if (!string.IsNullOrEmpty(tenBenhNhan))
+            {
+                <a asp-action="QuanLyBenhNhan" class="btn btn-outline-secondary me-2"><i class="bi bi-arrow-left"></i> Ds Bệnh nhân</a>
+            }
+            <a asp-action="Dashboard" class="btn btn-outline-secondary"><i class="bi bi-graph-up"></i> Dashboard</a>
+        </div>
+    </div>
+
+    <div class="admin-card overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-admin align-middle mb-0">
+                <thead class="text-center">
+                    <tr>
+                        <th>Thời gian</th>
+                        @if(string.IsNullOrEmpty(tenBenhNhan)) {
+                            <th>Bệnh nhân</th>
+                        }
+                        <th class="text-start">Tên Thuốc</th>
+                        <th>Điểm Likert</th>
+                        <th>Tác Dụng Phụ</th>
+                        <th class="text-start">Nhận Xét</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">
+                    @if(!Model.Any()) {
+                        <tr>
+                            <td colspan="@(string.IsNullOrEmpty(tenBenhNhan) ? 6 : 5)" class="text-muted p-4">Không có lịch sử đánh giá nào.</td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="text-muted small">@item.MaPhieuNavigation?.ThoiGianLamPhieu?.ToString("dd/MM/yyyy HH:mm")</td>
+                            
+                            @if(string.IsNullOrEmpty(tenBenhNhan)) {
+                                <td class="fw-semibold text-primary">
+                                    <a asp-action="LichSuDanhGia" asp-route-id="@item.MaPhieuNavigation?.MaBenhNhan" class="text-decoration-none">
+                                        @item.MaPhieuNavigation?.MaBenhNhanNavigation?.HoTen
+                                    </a>
+                                </td>
+                            }
+                            
+                            <td class="text-start fw-bold text-teal">@(item.MaThuocNavigation?.TenThuoc ?? item.MaThuoc)</td>
+                            
+                            <td>
+                                <span class="badge @(item.DiemLikert >= 4 ? "bg-success" : (item.DiemLikert == 3 ? "bg-warning text-dark" : "bg-danger"))">
+                                    @item.DiemLikert <i class="bi bi-star-fill text-warning small"></i>
+                                </span>
+                            </td>
+                            
+                            <td>
+                                @if (item.CoTacDungPhu == true)
+                                {
+                                    <span class="badge bg-danger mb-1"><i class="bi bi-exclamation-triangle"></i> Có</span>
+                                    <div class="small text-danger" style="max-width: 150px; margin: 0 auto;">@item.MoTaTrieuChung</div>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Không</span>
+                                }
+                            </td>
+                            
+                            <td class="text-start small text-muted">@item.NhanXet</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
