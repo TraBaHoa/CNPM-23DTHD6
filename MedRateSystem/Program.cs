@@ -37,11 +37,8 @@ app.UseSession();
 
 app.UseAuthorization();
 
-app.MapStaticAssets();
-
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Khaosat}/{action=Login}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Khaosat}/{action=Login}/{id?}");
 
 app.Run();
