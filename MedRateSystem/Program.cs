@@ -39,6 +39,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Khaosat}/{action=Login}/{id?}");
+    pattern: "{controller=Khaosat}/{action=Index}/{id?}");
 
 app.Run();

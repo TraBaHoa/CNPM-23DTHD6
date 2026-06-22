@@ -150,7 +150,28 @@ namespace MedRateSystem.Controllers
         public async Task<IActionResult> XoaBenhNhan(string id)
         {
             var bn = await _context.BenhNhans.FindAsync(id);
-            if (bn != null) { _context.BenhNhans.Remove(bn); await _context.SaveChangesAsync(); }
+            if (bn != null) 
+            { 
+                // Xóa Chi Tiết Khảo Sát và Phiếu Khảo Sát
+                var phieuKhaoSats = _context.PhieuKhaoSats.Where(p => p.MaBenhNhan == id).ToList();
+                foreach(var p in phieuKhaoSats) {
+                    var chiTietKS = _context.ChiTietKhaoSats.Where(c => c.MaPhieu == p.MaPhieu).ToList();
+                    _context.ChiTietKhaoSats.RemoveRange(chiTietKS);
+                }
+                _context.PhieuKhaoSats.RemoveRange(phieuKhaoSats);
+
+                // Xóa Chi Tiết Đơn Thuốc và Đơn Thuốc
+                var donThuocs = _context.DonThuocs.Where(d => d.MaBenhNhan == id).ToList();
+                foreach(var d in donThuocs) {
+                    var chiTietDT = _context.ChiTietDonThuocs.Where(c => c.MaDonThuoc == d.MaDonThuoc).ToList();
+                    _context.ChiTietDonThuocs.RemoveRange(chiTietDT);
+                }
+                _context.DonThuocs.RemoveRange(donThuocs);
+
+                // Cuối cùng xóa Bệnh Nhân
+                _context.BenhNhans.Remove(bn); 
+                await _context.SaveChangesAsync(); 
+            }
             return RedirectToAction("QuanLyBenhNhan");
         }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using MedRateSystem.Models;
@@ -109,6 +109,18 @@ public partial class MedRateContext : DbContext
                   .WithMany() // Nếu BenhNhan không có Collection DonThuocs, hãy để .WithMany()
                   .HasForeignKey(d => d.MaBenhNhan)
                   .HasConstraintName("FK_DonThuoc_BenhNhan");
+
+            // Ràng buộc ChiTietDonThuoc dùng đúng khóa ngoại MaDonThuoc
+            entity.HasMany(d => d.ChiTietDonThuocs)
+                  .WithOne()
+                  .HasForeignKey(ct => ct.MaDonThuoc)
+                  .HasConstraintName("FK_ChiTietDonThuoc_DonThuoc");
+
+            // Ràng buộc DonThuoc với BacSi
+            entity.HasOne(d => d.BacSiNavigation)
+                  .WithMany()
+                  .HasForeignKey(d => d.BacSiKeDon)
+                  .HasConstraintName("FK_DonThuoc_BacSi");
         });
 
         modelBuilder.Entity<PhieuKhaoSat>(entity =>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -16,6 +16,9 @@ namespace MedRateSystem.Models
 
         [ForeignKey("MaBenhNhan")]
         public virtual BenhNhan? MaBenhNhanNavigation { get; set; }
+
+        [ForeignKey("BacSiKeDon")]
+        public virtual BacSi? BacSiNavigation { get; set; }
 
         public virtual ICollection<ChiTietDonThuoc> ChiTietDonThuocs { get; set; } = new List<ChiTietDonThuoc>();
     }

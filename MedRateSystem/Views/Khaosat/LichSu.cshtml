@@ -71,7 +71,10 @@
                 <div class="review-card shadow-sm">
                     <div class="d-flex justify-content-between mb-3">
                         <div>
-                            <h6 class="fw-bold mb-1" style="color: #0f172a;">@bn?.HoTen</h6>
+                            <h6 class="fw-bold mb-1" style="color: #0f172a;">
+                                <i class="bi bi-person-circle text-secondary me-1"></i>
+                                @(item.MaPhieuNavigation?.MaBenhNhanNavigation?.HoTen ?? "Người dùng ẩn danh")
+                            </h6>
                             <div class="text-primary-custom fw-bold small"><i class="bi bi-capsule me-1"></i>@item.MaThuocNavigation?.TenThuoc</div>
                             <div class="text-muted small mt-1">@item.MaPhieuNavigation?.TinhTrangBenh</div>
                         </div>

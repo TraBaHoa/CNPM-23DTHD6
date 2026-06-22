@@ -161,11 +161,11 @@ namespace MedRateSystem.Controllers
             ViewBag.BenhNhan = benhNhan;
             SetHeaderStats();
 
-            // Truy vấn dữ liệu cho lịch sử, bao gồm cả phiếu khảo sát (để lấy thời gian) và thuốc
+            // Truy vấn TẤT CẢ dữ liệu cho cộng đồng, bao gồm Phiếu khảo sát và Bệnh nhân
             var lichSuKhaoSat = await _context.ChiTietKhaoSats
                 .Include(c => c.MaThuocNavigation)
                 .Include(c => c.MaPhieuNavigation)
-                .Where(c => c.MaPhieuNavigation.MaBenhNhan == maBenhNhan)
+                    .ThenInclude(p => p.MaBenhNhanNavigation)
                 .OrderByDescending(c => c.MaPhieuNavigation.ThoiGianLamPhieu)
                 .ToListAsync();
 
