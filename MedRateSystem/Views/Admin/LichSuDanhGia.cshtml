@@ -30,6 +30,12 @@
         </div>
     </div>
 
+    <!-- Thanh tìm kiếm -->
+    <div class="mb-3 search-wrapper" style="position: relative; max-width: 400px;">
+        <i class="bi bi-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+        <input type="text" id="searchInput" class="form-control shadow-sm" style="border-radius: 20px; padding-left: 40px; border: 1px solid #cbd5e1;" placeholder="Tìm kiếm tên bệnh nhân, tên thuốc...">
+    </div>
+
     <div class="admin-card overflow-hidden">
         <div class="table-responsive">
             <table class="table table-admin align-middle mb-0">
@@ -92,3 +98,22 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let rows = document.querySelectorAll('.table-admin tbody tr');
+        
+        rows.forEach(row => {
+            // Bỏ qua dòng thông báo trống nếu có
+            if (row.cells.length === 1 && row.cells[0].colSpan > 1) return;
+            
+            let text = row.innerText.toLowerCase();
+            if(text.includes(filter)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+</script>

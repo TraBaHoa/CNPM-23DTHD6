@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MedRateSystem")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+49aa5bd5cde8f4654d31bbb55645f9a762e45f9d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3b5eb1ea7d4a5b6b44e585d2eb46d31cdf98a54e")]
 [assembly: System.Reflection.AssemblyProductAttribute("MedRateSystem")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MedRateSystem")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
